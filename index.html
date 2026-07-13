@@ -69,6 +69,10 @@
   .dnum{width:32px;font-family:var(--cond);font-weight:700;font-size:18px;}
   .dname{flex:1;min-width:0;font-size:14px;font-weight:500;}
   .kdot{width:8px;height:8px;border-radius:4px;flex-shrink:0;}
+  .modeTog{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex-shrink:0;background:var(--bg);}
+  .modeTog button{font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:1px;color:var(--muted);background:transparent;border:none;padding:6px 12px;cursor:pointer;transition:background .15s,color .15s;}
+  .modeTog button.on{background:var(--cardio);color:#06212E;}
+  .homeTag{font-family:var(--cond);font-size:9px;font-weight:700;letter-spacing:1px;color:var(--cardio);border:1px solid var(--cardio);border-radius:10px;padding:1px 6px;margin-left:6px;vertical-align:middle;}
   .detail{padding:2px 0 12px 58px;}
   .strike{text-decoration:line-through;color:var(--muted);}
   .ghost{background:none;border:none;color:var(--muted);font-family:var(--body);font-size:13px;text-decoration:underline;padding:4px 8px;cursor:pointer;}
@@ -90,37 +94,61 @@
   var C={legs:"var(--legs)",cardio:"var(--cardio)",upper:"var(--upper)",recovery:"var(--recovery)",finish:"var(--finish)"};
   var KIND={legs:{l:"LEGS",c:"var(--legs)"},cardio:{l:"CARDIO",c:"var(--cardio)"},upper:{l:"UPPER + CORE",c:"var(--upper)"},recovery:{l:"RECOVERY",c:"var(--recovery)"},finish:{l:"FINISH",c:"var(--finish)"}};
 
+  // ---- GYM versions ----
   var LEGS_A=["Goblet / barbell squat — 3×8–10","Leg press — 3×10–12","Back extension — 3×12–15","Standing calf raise — 3×15","Plank — 3×20–40 sec"];
   var LEGS_B=["Romanian deadlift — 3×8–10","Walking lunge — 3×8/leg","Leg curl — 3×12","Glute bridge — 3×15","Dead bug — 3×10/side"];
   var UPPER=["Chest press / push-ups — 3×8–12","Lat pulldown / rows — 3×8–12","Overhead press — 3×10","Face pull / band pull-apart — 3×15","Leg raise — 3×12","Side plank — 3×20 sec/side"];
   var INT={1:"5 min warmup → [1 min hard / 2 min easy] ×6 → 5 min cooldown",2:"5 min warmup → [90 sec hard / 2 min easy] ×6 → cooldown",3:"5 min warmup → [2 min hard / 2 min easy] ×7 → cooldown",4:"5 min warmup → [2 min hard / 90 sec easy] ×8 → cooldown",5:"5 min warmup → [3 min hard / 2 min easy] ×6 → cooldown",6:"5 min warmup → [3 min hard / 90 sec easy] ×7 → cooldown"};
+
+  // ---- HOME versions (dumbbells + bench + kettlebell + walking pad) ----
+  var H_LEGS_A=["Goblet squat (DB or KB) — 3×10–12","Bulgarian split squat, rear foot on bench — 3×8/leg","DB Romanian deadlift — 3×10–12","Standing calf raise, DB in hand — 3×15","Plank — 3×20–40 sec"];
+  var H_LEGS_B=["Kettlebell swing — 3×15","DB reverse lunge — 3×8/leg","Single-leg DB Romanian deadlift — 3×8/leg","DB or KB hip thrust on bench — 3×12","Dead bug — 3×10/side"];
+  var H_UPPER=["DB bench press (on bench) — 3×8–12","One-arm DB row, hand on bench — 3×10/side","DB overhead press — 3×10","Bent-over reverse fly — 3×15","Leg raise — 3×12","Side plank — 3×20 sec/side"];
   var weekOf=function(d){return Math.min(6,Math.ceil(d/7));};
 
   function buildPlan(){
     var p=[];
+    // GYM cardio
     var steady=function(m){return [m+" min steady, conversational pace","Elliptical, or incline treadmill walk at 8–12%","Keep the pace honest — no coasting"];};
     var longSteady=function(m){return [m+" min long steady session","Elliptical or incline walk — your endurance builder","Add ~5 min vs last week when it feels easy"];};
     var recovery=["Walk ~20 min, very easy","Full-body mobility / stretch","This is how your legs actually recover"];
+    // HOME cardio (walking pad)
+    var hSteady=function(m){return [m+" min brisk walk on the pad","Steady pace you can still talk at","Throw on a show — it flies by"];};
+    var hLong=function(m){return [m+" min long walk on the pad","Easy conversational pace — pure base building","Longest session of the week; the pad's perfect for it"];};
+    var hRecovery=["20 min easy walk on the pad","Full-body mobility / stretch","Keep it gentle — this is recovery"];
+    var hInt=function(d){return [INT[weekOf(d)],"Pad at its fastest brisk pace for the 'hard' blocks (add incline if it has it)","If the pad's too slow to get hard, swap each hard block for 15 kettlebell swings"];};
+
     var layout=[
-      ["Legs A","legs",function(){return LEGS_A;}],
-      ["Cardio intervals","cardio",function(d){return [INT[weekOf(d)],"Hard = you can only get a few words out","Crank resistance, or bump incline & walk fast"];}],
-      ["Upper + Core","upper",function(){return UPPER;}],
-      ["Steady cardio","cardio",function(d){return steady(weekOf(d)>1?45:40);}],
-      ["Legs B","legs",function(){return LEGS_B;}],
-      ["Long steady cardio","cardio",function(d){return longSteady(40+(weekOf(d)-1)*5);}],
-      ["Active recovery","recovery",function(){return recovery;}]
+      ["Legs A","legs",function(){return LEGS_A;},function(){return H_LEGS_A;}],
+      ["Cardio intervals","cardio",function(d){return [INT[weekOf(d)],"Hard = you can only get a few words out","Crank resistance, or bump incline & walk fast"];},hInt],
+      ["Upper + Core","upper",function(){return UPPER;},function(){return H_UPPER;}],
+      ["Steady cardio","cardio",function(d){return steady(weekOf(d)>1?45:40);},function(d){return hSteady(weekOf(d)>1?45:40);}],
+      ["Legs B","legs",function(){return LEGS_B;},function(){return H_LEGS_B;}],
+      ["Long steady cardio","cardio",function(d){return longSteady(40+(weekOf(d)-1)*5);},function(d){return hLong(40+(weekOf(d)-1)*5);}],
+      ["Active recovery","recovery",function(){return recovery;},function(){return hRecovery;}]
     ];
-    for(var d=1;d<=42;d++){var t=layout[(d-1)%7];p.push({day:d,name:t[0],kind:t[1],detail:t[2](d)});}
-    p.push({day:43,name:"Legs A — PR day",kind:"finish",detail:LEGS_A.slice(0,3).concat(["Push for a rep or weight PR vs Day 1"]),note:"Prove how far you've come."});
-    p.push({day:44,name:"Intervals — hardest yet",kind:"finish",detail:[INT[6],"Go all-in on the hard portions","Then celebrate — you earned it"]});
-    p.push({day:45,name:"Re-measure & reset",kind:"finish",detail:["Weigh in, same morning conditions","Retake your Day-1 photo","Note how much easier cardio feels now"],note:"Roll this same week into month 2."});
+    for(var d=1;d<=42;d++){var t=layout[(d-1)%7];p.push({day:d,name:t[0],kind:t[1],detail:t[2](d),home:t[3](d)});}
+    p.push({day:43,name:"Legs A — PR day",kind:"finish",detail:LEGS_A.slice(0,3).concat(["Push for a rep or weight PR vs Day 1"]),home:H_LEGS_A.slice(0,3).concat(["Push heavier DBs/KB than Day 1"]),note:"Prove how far you've come."});
+    p.push({day:44,name:"Intervals — hardest yet",kind:"finish",detail:[INT[6],"Go all-in on the hard portions","Then celebrate — you earned it"],home:[INT[6],"Pad max pace + 15 kettlebell swings each hard block","Go all-in, then celebrate — you earned it"]});
+    p.push({day:45,name:"Re-measure & reset",kind:"finish",detail:["Weigh in, same morning conditions","Retake your Day-1 photo","Note how much easier cardio feels now"],home:["Weigh in, same morning conditions","Retake your Day-1 photo","Note how much easier cardio feels now"],note:"Roll this same week into month 2."});
     return p;
   }
   var PLAN=buildPlan();
 
-  var state={completed:{},startWeight:null,goalWeight:null,weights:[]};
+  var state={completed:{},startWeight:null,goalWeight:null,weights:[],modes:{}};
   try{var raw=localStorage.getItem(KEY);if(raw)state=Object.assign(state,JSON.parse(raw));}catch(e){}
+  if(!state.modes)state.modes={};
   function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+  function modeOf(day){return state.modes[day]==="home"?"home":"gym";}
+  function detailFor(p){return modeOf(p.day)==="home"?p.home:p.detail;}
+  function modeToggle(day){
+    var m=modeOf(day);
+    return '<div class="modeTog">'
+      +'<button class="'+(m==="gym"?"on":"")+'" data-mode="'+day+':gym">GYM</button>'
+      +'<button class="'+(m==="home"?"on":"")+'" data-mode="'+day+':home">HOME</button>'
+      +'</div>';
+  }
 
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
   function doneCount(){return Object.keys(state.completed).length;}
@@ -171,9 +199,12 @@
     if(!all){
       var t=PLAN[cur-1],k=KIND[t.kind];
       html+='<div class="card">';
-      html+='<span class="pill" style="color:'+k.c+';border:1px solid '+k.c+'">WK '+weekOf(cur)+' · '+k.l+'</span>';
-      html+='<div class="cardTitle">'+esc(t.name)+'</div>';
-      html+=detailList(t.detail,k.c);
+      html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">';
+      html+='<div><span class="pill" style="color:'+k.c+';border:1px solid '+k.c+'">WK '+weekOf(cur)+' · '+k.l+'</span>';
+      html+='<div class="cardTitle">'+esc(t.name)+'</div></div>';
+      html+=modeToggle(cur);
+      html+='</div>';
+      html+=detailList(detailFor(t),k.c);
       if(t.note)html+='<div class="note">'+esc(t.note)+'</div>';
       html+='<button class="btn primary" data-toggle="'+cur+'">Mark Day '+cur+' done</button>';
       html+='</div>';
@@ -205,9 +236,9 @@
         html+='<div class="dayRow" data-expand="'+p.day+'">';
         html+='<div class="check'+(on?" on":"")+'" data-toggle="'+p.day+'">'+(on?"✓":"")+'</div>';
         html+='<div class="dnum" style="color:'+(on?"var(--muted)":"var(--ink)")+'">'+p.day+'</div>';
-        html+='<div class="dname'+(on?" strike":"")+'">'+esc(p.name)+'</div>';
+        html+='<div class="dname'+(on?" strike":"")+'">'+esc(p.name)+(modeOf(p.day)==="home"?' <span class="homeTag">HOME</span>':"")+'</div>';
         html+='<div class="kdot" style="background:'+kk.c+'"></div></div>';
-        if(open){html+='<div class="detail">'+detailList(p.detail,kk.c)+(p.note?'<div class="note">'+esc(p.note)+'</div>':"")+'</div>';}
+        if(open){html+='<div class="detail">'+modeToggle(p.day)+detailList(detailFor(p),kk.c)+(p.note?'<div class="note">'+esc(p.note)+'</div>':"")+'</div>';}
       }
     }
     html+='</div></div>';
@@ -220,12 +251,14 @@
 
   document.getElementById("app").addEventListener("click",function(e){
     var el=e.target;
+    var modeBtn=el.closest?el.closest("[data-mode]"):null;
+    if(modeBtn){e.stopPropagation();var parts=modeBtn.getAttribute("data-mode").split(":");var day=+parts[0],where=parts[1];if(where==="gym")delete state.modes[day];else state.modes[day]="home";save();render();return;}
     var toggle=el.closest?el.closest("[data-toggle]"):null;
     var expand=el.closest?el.closest("[data-expand]"):null;
     if(toggle){e.stopPropagation();var d=+toggle.getAttribute("data-toggle");if(state.completed[d])delete state.completed[d];else state.completed[d]=true;save();render();return;}
     if(el.getAttribute&&el.getAttribute("data-setup")){var s=parseFloat(document.getElementById("sw").value),g=parseFloat(document.getElementById("gw").value);if(!s||s<=0)return;state.startWeight=s;state.goalWeight=(g&&g>0)?g:Math.max(0,s-40);save();render();return;}
     if(el.getAttribute&&el.getAttribute("data-log")){var v=parseFloat(document.getElementById("lw").value);if(!v||v<=0)return;state.weights.push({day:currentDay(),lbs:v,ts:Date.now()});save();render();return;}
-    if(el.getAttribute&&el.getAttribute("data-reset")){if(confirm("Clear all progress and weigh-ins?")){state={completed:{},startWeight:null,goalWeight:null,weights:[]};expanded=null;save();render();}return;}
+    if(el.getAttribute&&el.getAttribute("data-reset")){if(confirm("Clear all progress and weigh-ins?")){state={completed:{},startWeight:null,goalWeight:null,weights:[],modes:{}};expanded=null;save();render();}return;}
     if(expand){var dd=+expand.getAttribute("data-expand");expanded=expanded===dd?null:dd;render();return;}
   });
 
