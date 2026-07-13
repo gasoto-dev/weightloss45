@@ -1,6 +1,6 @@
 // 45-Day Kickstart — service worker
 // Bump CACHE when you change the app so clients pick up the new version.
-const CACHE = "kickstart-v1";
+const CACHE = "kickstart-v2";
 
 // App shell — everything needed to run offline. Relative paths so it works
 // under a GitHub Pages subpath (username.github.io/repo/).
